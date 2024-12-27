@@ -22,7 +22,6 @@ function Header() {
             </h1>
           </Link>
         </div>
-
         <div className="flex items-center">
           <NavButton href="/tickets" label="Tickets" icon={File} />
 
