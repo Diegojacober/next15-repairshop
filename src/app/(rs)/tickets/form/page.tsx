@@ -1,7 +1,7 @@
 import { getTicket } from "@/lib/queries/getTicket";
 import { BackButton } from "@/components/BackButton";
+import TicketForm from "@/app/(rs)/tickets/form/TickerForm";
 
-import React from "react";
 import { getCustomer } from "@/lib/queries/getCustomer";
 
 async function TicketFormPage({
@@ -50,6 +50,7 @@ async function TicketFormPage({
 
       // return ticket form
       console.log(customer);
+      return <TicketForm customer={customer} />;
     }
 
     if (ticketId) {
@@ -69,6 +70,8 @@ async function TicketFormPage({
       const customer = await getCustomer(ticket.customerId);
       console.log("ticket: ", ticket);
       console.log("customer: ", customer);
+
+      return <TicketForm customer={customer} ticket={ticket} />;
     }
   } catch (e) {
     if (e instanceof Error) {
