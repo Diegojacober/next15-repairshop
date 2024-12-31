@@ -8,7 +8,6 @@ import {
   pgTable,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { Ticket } from "lucide-react";
 
 export const customers = pgTable("customers", {
   id: serial("id").primaryKey(),
