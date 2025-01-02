@@ -1,6 +1,6 @@
 import { getTicket } from "@/lib/queries/getTicket";
 import { BackButton } from "@/components/BackButton";
-import TicketForm from "@/app/(rs)/tickets/form/TickerForm";
+import TicketForm from "@/app/(rs)/tickets/form/TicketForm";
 
 import { getCustomer } from "@/lib/queries/getCustomer";
 
