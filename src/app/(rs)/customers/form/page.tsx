@@ -35,8 +35,6 @@ async function CustomerFormPage({
           </>
         );
       }
-
-      console.log(customer);
       return <CustomerForm customer={customer} />;
     } else {
       return <CustomerForm />;
