@@ -19,7 +19,7 @@ type Props<S> = {
   className?: string;
 } & TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-export function TextAreaWithLabel<S>({
+export default function TextAreaWithLabel<S>({
   fieldTitle,
   nameInSchema,
   className,
