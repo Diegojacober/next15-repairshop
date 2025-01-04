@@ -60,7 +60,7 @@ export const saveTicketAction = actionClient
           title: ticket.title,
           description: ticket.description,
           completed: ticket.completed,
-          tech: ticket.tech,
+          tech: ticket.tech.toLowerCase(),
         })
         .where(eq(tickets.id, ticket.id!))
         .returning({ updatedId: tickets.id });

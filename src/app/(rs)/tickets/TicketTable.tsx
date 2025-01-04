@@ -31,8 +31,9 @@ import {
   ArrowUp,
 } from "lucide-react";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { usePooling } from "@/hooks/usePooling";
 import { Button } from "@/components/ui/button";
 import Filter from "@/components/react-table/Filter";
 
@@ -44,6 +45,7 @@ type RowType = TicketSearchResultsType[0];
 
 const TicketTable = ({ data }: Props) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -54,6 +56,13 @@ const TicketTable = ({ data }: Props) => {
     },
   ]);
 
+  usePooling(searchParams.get("searchText"), 300000);
+
+  const pageIndex = useMemo(() => {
+    const page = searchParams.get("page");
+    return page ? parseInt(page) - 1 : 0;
+  }, [searchParams.get("page")]);
+
   const columnHeadersArray: Array<keyof RowType> = [
     "ticketDate",
     "title",
@@ -63,6 +72,14 @@ const TicketTable = ({ data }: Props) => {
     "email",
     "completed",
   ];
+
+  const columnWidths = {
+    completed: 150,
+    ticketDate: 150,
+    title: 250,
+    tech: 225,
+    email: 225,
+  };
 
   const columnHelper = createColumnHelper<RowType>();
 
@@ -84,6 +101,8 @@ const TicketTable = ({ data }: Props) => {
       },
       {
         id: columnName,
+        size:
+          columnWidths[columnName as keyof typeof columnWidths] ?? undefined,
         header: ({ column }) => {
           return (
             <Button
@@ -134,9 +153,8 @@ const TicketTable = ({ data }: Props) => {
     state: {
       sorting,
       columnFilters,
-    },
-    initialState: {
       pagination: {
+        pageIndex,
         pageSize: 10,
       },
     },
@@ -149,6 +167,17 @@ const TicketTable = ({ data }: Props) => {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  useEffect(() => {
+    const currentPageIndex = table.getState().pagination.pageIndex;
+    const pageCount = table.getPageCount();
+
+    if (pageCount <= currentPageIndex && currentPageIndex > 0) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", "1");
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }
+  }, [table.getState().columnFilters]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="mt-6 flex flex-col gap-4">
       <div className="mt-6 rounded-lg overflow-hidden border border-border">
@@ -157,7 +186,11 @@ const TicketTable = ({ data }: Props) => {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="bg-secondary p-1">
+                  <TableHead
+                    style={{ width: header.getSize() }}
+                    key={header.id}
+                    className="bg-secondary p-1"
+                  >
                     <div>
                       {header.isPlaceholder
                         ? null
@@ -168,7 +201,12 @@ const TicketTable = ({ data }: Props) => {
                     </div>
                     {header.column.getCanFilter() ? (
                       <div className="grid place-content-center">
-                        <Filter column={header.column} />
+                        <Filter
+                          column={header.column}
+                          filteredRows={table
+                            .getFilteredRowModel()
+                            .rows.map((row) => row.getValue(header.column.id))}
+                        />
                       </div>
                     ) : null}
                   </TableHead>
@@ -196,12 +234,13 @@ const TicketTable = ({ data }: Props) => {
           </TableBody>
         </Table>
       </div>
-      <div className="flex justify-between items-center">
-        <div className="flex basis-1/3 items-center">
+      <div className="flex justify-between items-center gap-1 flex-wrap">
+        <div>
           <p className="whitespace-nowrap font-bold">
-            {`Page ${
-              table.getState().pagination.pageIndex + 1
-            } of ${table.getPageCount()}`}
+            {`Page ${table.getState().pagination.pageIndex + 1} of ${Math.max(
+              1,
+              table.getPageCount()
+            )}`}
             &nbsp;&nbsp;
             {`[${table.getFilteredRowModel().rows.length} ${
               table.getFilteredRowModel().rows.length !== 1
@@ -210,30 +249,49 @@ const TicketTable = ({ data }: Props) => {
             }]`}
           </p>
         </div>
-        <div className="space-x-1">
-          <Button variant={"outline"} onClick={() => table.resetSorting()}>
-            Reset Sorting
-          </Button>
-          <Button
-            variant={"outline"}
-            onClick={() => table.resetColumnFilters()}
-          >
-            Reset Filters
-          </Button>
-          <Button
-            variant={"outline"}
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant={"outline"}
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+        <div className="flex flex-row gap-1">
+          <div className="flex flex-row gap-1">
+            <Button variant={"outline"} onClick={() => router.refresh()}>
+              Refresh Data
+            </Button>
+            <Button variant={"outline"} onClick={() => table.resetSorting()}>
+              Reset Sorting
+            </Button>
+            <Button
+              variant={"outline"}
+              onClick={() => table.resetColumnFilters()}
+            >
+              Reset Filters
+            </Button>
+          </div>
+          <div className="flex flex-row gap-1">
+            <Button
+              variant={"outline"}
+              onClick={() => {
+                const newIndex = table.getState().pagination.pageIndex - 1;
+                table.setPageIndex(newIndex);
+                const params = new URLSearchParams(searchParams.toString());
+                params.set("page", (newIndex + 1).toString());
+                router.replace(`?${params.toString()}`, { scroll: false });
+              }}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Previous
+            </Button>
+            <Button
+              variant={"outline"}
+              onClick={() => {
+                const newIndex = table.getState().pagination.pageIndex + 1;
+                table.setPageIndex(newIndex);
+                const params = new URLSearchParams(searchParams.toString());
+                params.set("page", (newIndex + 1).toString());
+                router.replace(`?${params.toString()}`, { scroll: false });
+              }}
+              disabled={!table.getCanNextPage()}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </div>
