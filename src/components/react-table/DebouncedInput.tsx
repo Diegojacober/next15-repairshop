@@ -24,7 +24,7 @@ export function DebouncedInput({
     }, debounce);
 
     return () => clearTimeout(timeout);
-  }, [value, debounce]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [value, debounce]); //
 
   return (
     <Input

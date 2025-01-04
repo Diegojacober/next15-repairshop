@@ -14,5 +14,5 @@ export function usePooling(searchParam: string | null, ms: number = 60000) {
     }, ms);
 
     return () => clearInterval(intervalId);
-  }, [searchParam, ms]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParam, ms]); //
 }
