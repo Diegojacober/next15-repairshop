@@ -3,7 +3,7 @@ import { BackButton } from "@/components/BackButton";
 import CustomerForm from "@/app/(rs)/customers/form/CustomerForm";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
-export async function geneareteMetadata({
+export async function generateMetadata({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
