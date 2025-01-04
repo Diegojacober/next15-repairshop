@@ -42,7 +42,7 @@ export const saveTicketAction = actionClient
             customerId: ticket.customerId,
             title: ticket.title,
             description: ticket.description,
-            tech: ticket.tech,
+            tech: ticket.tech.toLowerCase(),
           })
           .returning({ insertedId: tickets.id });
 
