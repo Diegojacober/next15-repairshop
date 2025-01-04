@@ -5,7 +5,7 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { getCustomer } from "@/lib/queries/getCustomer";
 import { Users, init as kindeInit } from "@kinde/management-api-js";
 
-export async function geneareteMetadata({
+export async function generateMetadata({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
